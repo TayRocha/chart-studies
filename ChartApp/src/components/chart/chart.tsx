@@ -1,7 +1,7 @@
 
 import { curveBasis, curveCardinal, curveLinear, curveMonotoneX, curveNatural, line, pointer, pointers, quadtree, scaleLinear, scaleOrdinal, scaleSequential, scaleTime, select, stack } from 'd3';
 import React, { useRef } from 'react';
-import { Dimensions, GestureResponderEvent, StyleSheet, Touchable, TouchableOpacity, View } from 'react-native';
+import { Dimensions, GestureResponderEvent, ScrollView, StyleSheet, Text, Touchable, TouchableOpacity, View } from 'react-native';
 import Svg, { G, Line, Path, Rect } from 'react-native-svg';
 import { dataMedia, DataMediaType, DataPoint } from '../../../App';
 
@@ -12,24 +12,45 @@ const { width, height } = Dimensions.get("window");
 const MARGIN_CHART = 32;
 const PADDING_CHART = 8;
 const WIDTH_CHART = width - (MARGIN_CHART * 2);
-const WIDTH_CHART_CONTENT = (WIDTH_CHART - 16);
+const WIDTH_CHART_CONTENT = (WIDTH_CHART - 16) * 2;
 const HEIGHT_BAR_CHART = 240;
 const RANGE_X_CHART = WIDTH_CHART_CONTENT-(WIDTH_CHART_CONTENT/6) - 8;
 const SAFE_AREA_CHART = 20; //percentual
 const RANGE_Y_CHART = HEIGHT_BAR_CHART * (100 - SAFE_AREA_CHART) / 100;
+const RANGE_Y_CHART_TOP = HEIGHT_BAR_CHART * SAFE_AREA_CHART / 100;
+const QUANT_BAR_DISPLAYED = 6;
 
+const DATE:{[key:string]:number} = {
+    janeiro: 1,
+    fevereiro: 2,
+    marco: 3,
+    abril: 4,
+    maio: 5,
+    junho: 6,
+    julho: 7,
+    agosto: 8,
+    setembro: 9,
+    outubro: 10,
+    novembro: 11,
+    dezembro: 12
+}
 export default function StackedBarChart({data}: IChartProps){
-    const widthChartBar = WIDTH_CHART/dataMedia.length - 8;
+    const widthChartBar = WIDTH_CHART/QUANT_BAR_DISPLAYED-8;
     const yAxis = HEIGHT_BAR_CHART / 2;
-    const max = Math.max(...data.map(val => val.value));
-    const min = Math.min(...data.map(val => val.value));
+    const max = Math.max(...data.map(val => Math.max(val.profits, val.debts)));
+    const min = Math.min(...data.map(val => Math.min(val.profits, val.debts)));
+    console.log(max, min)
+    const getDate = (d:string)=>{
+        console.log(DATE[d.split("-")[1]])   
+        return DATE[d.split("-")[1]];
+    }
     const y = scaleLinear().domain([0, max]).range([0 , (RANGE_Y_CHART / 2)]);
     const x = scaleSequential()
-      .domain([1, 6])
-      .range([0, RANGE_X_CHART]);
-    const yL = scaleLinear().domain([(max * -1), max]).range([RANGE_Y_CHART, PADDING_CHART]);
+      .domain([1, 12])
+      .range([0, RANGE_X_CHART + 16]);
+    const yL = scaleLinear().domain([(max * -1), max]).range([RANGE_Y_CHART, RANGE_Y_CHART_TOP]);
     const xL = scaleSequential()
-        .domain([1, 6])
+        .domain([1, 12])
         .range([widthChartBar/2 + 8, WIDTH_CHART_CONTENT - widthChartBar/2 - 8]);
     const curvedLine = line<DataMediaType>()
         .x(d => xL(d.date))
@@ -47,15 +68,14 @@ export default function StackedBarChart({data}: IChartProps){
             console.log('Y offset to page: ' + py)
         })
     }
-
      return(
-        <View>
-            <Svg onTouchEnd={(e) => handleMouseMove(e)} width={WIDTH_CHART_CONTENT} height={HEIGHT_BAR_CHART + (PADDING_CHART * 2)} style={{backgroundColor:"#D6DEF1", borderRadius:8}}>
+        <ScrollView showsHorizontalScrollIndicator={false} horizontal={true} scrollEnabled={true} style={{maxWidth: WIDTH_CHART, borderRadius:8, backgroundColor:"#D6DEF1", overflow: "hidden"}}>
+            <Svg onTouchEnd={(e) => handleMouseMove(e)} width={WIDTH_CHART_CONTENT} height={HEIGHT_BAR_CHART + (PADDING_CHART * 2)} style={{borderRadius:8}}>
                 {/* bars */}
                 {dataMedia.map((item, i) => (
-                    <Rect
+                    i > 0 && i < 13 && <Rect
                     key={`background-bar-${i}`}
-                    x={x(item.date) + PADDING_CHART}
+                    x={x(item.date) + (8*i)}
                     y={8}
                     width={widthChartBar}
                     height={HEIGHT_BAR_CHART}
@@ -64,18 +84,29 @@ export default function StackedBarChart({data}: IChartProps){
                     />
                 ))}
                 {data.map((item, i) => (
-                    <Rect
-                    key={`bar-${i}`}
-                    x={x(item.date) + (PADDING_CHART * 2)}
-                    y={ item.categ == 'assets'? yAxis - y(item.value): yAxis}
-                    width={widthChartBar - (PADDING_CHART * 2)}
-                    height={y(item.value)}
-                    fill={item.categ == 'assets'?"#E8FFD6":"#FFD9F9"}
-                    stroke={item.categ == 'assets'?"#C7F3A1":"#F5A4E8"}
-                    />
+                    <View key={`group-bar-${i}`}>
+                        <Rect
+                        key={`profits-bar-${i}`}
+                        x={x(getDate(item.date)) + (PADDING_CHART) + PADDING_CHART * (i + 1)}
+                        y={yAxis - y(item.profits)}
+                        width={widthChartBar - (PADDING_CHART * 2)}
+                        height={y(item.profits)}
+                        fill={"#E8FFD6"}
+                        stroke={"#C7F3A1"}
+                        />
+                        <Rect
+                        key={`debts-bar-${i}`}
+                        x={x(getDate(item.date)) + (PADDING_CHART) + (PADDING_CHART * (i + 1))}
+                        y={yAxis}
+                        width={widthChartBar - (PADDING_CHART * 2)}
+                        height={y(item.debts)}
+                        fill={"#FFD9F9"}
+                        stroke={"#F5A4E8"}
+                        />
+                    </View>
                 ))}
                 <Path fill='none' stroke={"#191919"} d={`${curvedLine}`} strokeWidth={2}/>
             </Svg>
-        </View>
+        </ScrollView>
      );
 }
