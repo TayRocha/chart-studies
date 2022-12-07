@@ -1,8 +1,8 @@
 
-import { curveBasis, curveCardinal, curveLinear, curveMonotoneX, curveNatural, line, pointer, pointers, quadtree, scaleLinear, scaleOrdinal, scaleSequential, scaleTime, select, stack } from 'd3';
-import React, { useRef } from 'react';
-import { Dimensions, GestureResponderEvent, ScrollView, StyleSheet, Text, Touchable, TouchableOpacity, View } from 'react-native';
-import Svg, { G, Line, Path, Rect } from 'react-native-svg';
+import {curveMonotoneX, line, scaleLinear, scaleSequential} from 'd3';
+import React from 'react';
+import { Dimensions, GestureResponderEvent, ScrollView } from 'react-native';
+import Svg, {Path, Rect } from 'react-native-svg';
 import { dataMedia, DataMediaType, DataPoint } from '../../../App';
 
 interface IChartProps extends React.PropsWithChildren{
