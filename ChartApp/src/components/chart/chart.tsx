@@ -1,7 +1,7 @@
 
 import {curveMonotoneX, line, scaleLinear, scaleSequential} from 'd3';
 import React from 'react';
-import { Dimensions, GestureResponderEvent, ScrollView } from 'react-native';
+import { Dimensions, GestureResponderEvent, ScrollView, View } from 'react-native';
 import Svg, {Path, Rect } from 'react-native-svg';
 import { dataMedia, DataMediaType, DataPoint } from '../../../App';
 
