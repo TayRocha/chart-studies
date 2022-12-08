@@ -1,7 +1,7 @@
 
-import {curveMonotoneX, line, scaleLinear, scaleSequential} from 'd3';
+import {curveMonotoneX, line, pointer, scaleLinear, scaleSequential} from 'd3';
 import React from 'react';
-import { Dimensions, GestureResponderEvent, ScrollView, View } from 'react-native';
+import { Dimensions, GestureResponderEvent, ScrollView, TouchableWithoutFeedback, View } from 'react-native';
 import Svg, {Path, Rect } from 'react-native-svg';
 import { dataMedia, DataMediaType, DataPoint } from '../../../App';
 
@@ -70,7 +70,7 @@ export default function StackedBarChart({data}: IChartProps){
     }
      return(
         <ScrollView showsHorizontalScrollIndicator={false} horizontal={true} scrollEnabled={true} style={{maxWidth: WIDTH_CHART, borderRadius:8, backgroundColor:"#D6DEF1", overflow: "hidden"}}>
-            <Svg onTouchEnd={(e) => handleMouseMove(e)} width={WIDTH_CHART_CONTENT} height={HEIGHT_BAR_CHART + (PADDING_CHART * 2)} style={{borderRadius:8}}>
+            <Svg width={WIDTH_CHART_CONTENT} height={HEIGHT_BAR_CHART + (PADDING_CHART * 2)} style={{borderRadius:8}}>
                 {/* bars */}
                 {dataMedia.map((item, i) => (
                     i > 0 && i < 13 && <Rect
@@ -81,6 +81,7 @@ export default function StackedBarChart({data}: IChartProps){
                     height={HEIGHT_BAR_CHART}
                     fill={"#ffffff66"}
                     rx={8}
+                    onPress={(e) => {console.log(e.nativeEvent.locationX)}}
                     />
                 ))}
                 {data.map((item, i) => (
@@ -93,6 +94,7 @@ export default function StackedBarChart({data}: IChartProps){
                         height={y(item.profits)}
                         fill={"#E8FFD6"}
                         stroke={"#C7F3A1"}
+                        onPress={(e) => {console.log(e.nativeEvent.locationX)}}
                         />
                         <Rect
                         key={`debts-bar-${i}`}
@@ -102,10 +104,11 @@ export default function StackedBarChart({data}: IChartProps){
                         height={y(item.debts)}
                         fill={"#FFD9F9"}
                         stroke={"#F5A4E8"}
+                        onPress={(e) => {console.log(e.nativeEvent.locationX)}}
                         />
                     </View>
                 ))}
-                <Path fill='none' stroke={"#191919"} d={`${curvedLine}`} strokeWidth={2}/>
+                <Path onPress={(e) => {console.log(e.nativeEvent.locationX)}} fill='none' stroke={"#191919"} d={`${curvedLine}`} strokeWidth={2}/>
             </Svg>
         </ScrollView>
      );
