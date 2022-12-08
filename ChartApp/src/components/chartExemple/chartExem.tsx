@@ -1,145 +1,105 @@
-import React from 'react';
+import { NumberValue } from 'd3';
+import { scaleLinear, scaleTime } from 'd3-scale';
+import { curveMonotoneX, line } from 'd3-shape';
+import { timeMonth } from 'd3-time';
+import * as React from 'react';
+import { Dimensions, NativeTouchEvent, ScrollView, View } from 'react-native';
+import Svg, { Circle, Defs, Path, Rect, Use } from 'react-native-svg';
+import { DataPoint, DataType } from '../../../App';
 
-import {
-  Canvas,
-  Line,
-  Path,
-  runTiming,
-  Skia,
-  SkPath,
-  useComputedValue,
-  useValue,
-  vec,
-} from '@shopify/react-native-skia';
-
-import {animatedData, DataPoint, originalData} from '../../../Data';
-import {curveBasis, line, scaleLinear, scaleTime} from 'd3';
-import {Easing, View, Pressable, Text, StyleSheet} from 'react-native';
-
-interface GraphData {
-  min: number;
-  max: number;
-  curve: SkPath;
+export interface ISChartProps extends React.PropsWithChildren{
+  data: DataType[];
 }
-
-const Chart = () => {
-  const transition = useValue(1);
-  const state = useValue({
-    current: 0,
-    next: 1,
-  });
-
-  const GRAPH_HEIGHT = 400;
-  const GRAPH_WIDTH = 360;
-
-  const makeGraph = (data: DataPoint[]): GraphData => {
-    const max = Math.max(...data.map(val => val.value));
-    const min = Math.min(...data.map(val => val.value));
-    const y = scaleLinear().domain([0, max]).range([GRAPH_HEIGHT, 35]);
-
-    const x = scaleTime()
-      .domain([new Date(2000, 1, 1), new Date(2000, 1, 15)])
-      .range([10, GRAPH_WIDTH - 10]);
-
-    const curvedLine = line<DataPoint>()
-      .x(d => x(new Date(d.date)))
-      .y(d => y(d.value))
-      .curve(curveBasis)(data);
-    console.log(curvedLine)
-    const skPath = Skia.Path.MakeFromSVGString(curvedLine!);
-
-    return {
-      max,
-      min,
-      curve: skPath!,
-    };
-  };
-
-  const transitionStart = (end: number) => {
-    state.current = {
-      current: end,
-      next: state.current.current,
-    };
-    transition.current = 0;
-    runTiming(transition, 1, {
-      duration: 750,
-      easing: Easing.inOut(Easing.cubic),
-    });
-  };
-
-  const graphData = [makeGraph(originalData), makeGraph(animatedData)];
-
-  const path = useComputedValue(() => {
-    const start = graphData[state.current.current].curve;
-    const end = graphData[state.current.next].curve;
-    const result = start.interpolate(end, transition.current);
-    return result?.toSVGString() ?? '0';
-  }, [state, transition]);
-
+type netWorthType = {
+  x: number,
+  date: NumberValue,
+  value: number
+}
+export default function SChart ({data}: ISChartProps) {
+  const { width, height } = Dimensions.get("window");
+  const marginHorizontal = 32;
+  const widthWrapper = width - (marginHorizontal * 2);
+  const heightWrapper = 248;
+  const widthContentDisplayed = widthWrapper - 16;
+  const heightBar = 240;
+  const quantBarDisplayed = 6;
+  const widthBar = (widthContentDisplayed/ quantBarDisplayed);
+  const widthContentChart = widthBar * data.length;
+  const yAxis = heightBar / 2;
+  const x1Line = widthBar/2 - 4;
+  const x2Line = widthContentChart + (widthBar/2-4);
+  const safeAreaChart = 20; //percentual
+  const heightLine = heightBar -(safeAreaChart * 2) + 16;
+  const maxHeightData = (heightBar/2 * (100 - safeAreaChart)) / 100;
+  const year = 2022;
+  const max = Math.max(...data.map(val => Math.max(val.profits, val.debts)));
+  const min = Math.min(...data.map(val => Math.min(val.profits, val.debts)));
+  const yScale = scaleLinear().domain([0, max]).range([0 , maxHeightData]);
+  const xScale = scaleTime().domain([new Date(year-1-1), new Date(year-12-2)]).range([0, widthContentChart]);
+  const xLineScale = scaleTime().domain([new Date(year-1-1), new Date(year-12-2)]).range([x1Line, x2Line]);
+  const yLineScale = scaleLinear().domain([(max * -1), max]).range([heightLine, safeAreaChart]);
+  const netWorth: netWorthType[] = data.map((item, i) => {return {x: i,date:item.date, value: item.profits - item.debts}});
+  netWorth.unshift({x:0-x1Line, date:2022-1-1,value: 0});
+  netWorth.push({x: widthContentChart, date: 2022-1-1, value: 0});
+  const curvedLine = line<netWorthType>()
+  .x(d => d.x == 0-x1Line || d.x == widthContentChart? d.x: xLineScale(d.date))
+  .y(d => yLineScale(d.value))
+  .curve(curveMonotoneX)(netWorth) as string;
+  console.log("widthBar:", widthBar, "widthcontent:", widthContentDisplayed)
+  data.map((item) => console.log(xScale(item.date)))
+  
+  const onPress = (x: number)=>{
+      const filterArray = data.filter(item => xScale(item.date) < x);
+      const itemSelected = filterArray && filterArray.pop()
+      console.log(itemSelected)
+  }
   return (
-    <View style={styles.container}>
-      <Canvas
-        style={{
-          width: GRAPH_WIDTH,
-          height: GRAPH_HEIGHT,
-        }}>
-        <Line
-          p1={vec(10, 130)}
-          p2={vec(400, 130)}
-          color="lightgrey"
-          style="stroke"
-          strokeWidth={1}
-        />
-        <Line
-          p1={vec(10, 250)}
-          p2={vec(400, 250)}
-          color="lightgrey"
-          style="stroke"
-          strokeWidth={1}
-        />
-        <Line
-          p1={vec(10, 370)}
-          p2={vec(400, 370)}
-          color="lightgrey"
-          style="stroke"
-          strokeWidth={1}
-        />
-        <Path style="stroke" path={path} strokeWidth={4} color="#6231ff" />
-      </Canvas>
-      <View style={styles.buttonContainer}>
-        <Pressable
-          onPress={() => transitionStart(0)}
-          style={styles.buttonStyle}>
-          <Text style={styles.textStyle}>Graph 1</Text>
-        </Pressable>
-        <Pressable
-          onPress={() => transitionStart(1)}
-          style={styles.buttonStyle}>
-          <Text style={styles.textStyle}>Graph 2</Text>
-        </Pressable>
+    <View style={{ width: widthWrapper-8, height: heightWrapper, borderColor:"#D6DEF1", borderWidth: 8, borderRadius:8, backgroundColor:"#D6DEF1"}}>
+    <ScrollView showsHorizontalScrollIndicator={false} horizontal={true} scrollEnabled={true} style={{maxWidth: widthContentDisplayed, width: widthContentDisplayed, borderRadius:8, overflow: "hidden"}}>
+      <View>
+      <Svg width={widthContentChart} height={heightBar} style={{borderRadius:8}}>
+          <Defs>
+            <Circle id={"selected-bar"}cx={0} cy={0} r={5} fill={"#000000"}/>
+          </Defs>
+          {data.map((item, i) => (
+          <View key={`group-bar-${i}`}>
+            <Rect
+            key={`background-bar-${i}`}
+            x={xScale(item.date)}
+            y={0}
+            width={widthBar - 8}
+            height={heightBar}
+            fill={"#ffffff66"}
+            rx={8}
+            onPress={(e) => {onPress(e.nativeEvent.locationX)}}
+            />
+          <Rect
+            key={`profits-bar-${i}`}
+            x={xScale(item.date)+8}
+            y={yAxis - yScale(item.profits)}
+            width={widthBar - 26}
+            height={yScale(item.profits)}
+            fill={"#E8FFD6"}
+            stroke={"#C7F3A1"}
+            onPress={(e) => {onPress(e.nativeEvent.locationX)}}
+            />
+          <Rect
+            key={`debts-bar-${i}`}
+            x={xScale(item.date)+8}
+            y={yAxis}
+            width={widthBar - 26}
+            height={yScale(item.debts)}
+            fill={"#FFD9F9"}
+            stroke={"#F5A4E8"}
+            onPress={(e) => {onPress(e.nativeEvent.locationX)}}
+          />
+          <Use x={xLineScale(item.date)} y={yLineScale(item.profits - item.debts)} href={'#selected-bar'}/>
+          </View>
+        ))}
+        <Path onPress={(e) => {onPress(e.nativeEvent.locationX)}} fill='none' stroke={"#191919"} d={`${curvedLine}`} strokeWidth={2}/>
+      </Svg>
       </View>
+    </ScrollView>
     </View>
   );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-  },
-  buttonStyle: {
-    marginRight: 20,
-    backgroundColor: '#6231ff',
-    paddingVertical: 5,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-  },
-  textStyle: {
-    color: 'white',
-    fontSize: 20,
-  },
-});
-
-export default Chart;
+}
