@@ -3,8 +3,9 @@ import { scaleLinear, scaleTime } from 'd3-scale';
 import { curveMonotoneX, line } from 'd3-shape';
 import { timeMonth } from 'd3-time';
 import * as React from 'react';
+import { useState } from 'react';
 import { Dimensions, NativeTouchEvent, ScrollView, View } from 'react-native';
-import Svg, { Circle, Defs, Path, Rect, Use } from 'react-native-svg';
+import Svg, { Circle, Defs, Path, Rect, Use} from 'react-native-svg';
 import { DataPoint, DataType } from '../../../App';
 
 export interface ISChartProps extends React.PropsWithChildren{
@@ -32,6 +33,8 @@ export default function SChart ({data}: ISChartProps) {
   const heightLine = heightBar -(safeAreaChart * 2) + 16;
   const maxHeightData = (heightBar/2 * (100 - safeAreaChart)) / 100;
   const year = 2022;
+
+  const [selectedBar, setselectedBar] = useState(-1);
   const max = Math.max(...data.map(val => Math.max(val.profits, val.debts)));
   const min = Math.min(...data.map(val => Math.min(val.profits, val.debts)));
   const yScale = scaleLinear().domain([0, max]).range([0 , maxHeightData]);
@@ -41,17 +44,17 @@ export default function SChart ({data}: ISChartProps) {
   const netWorth: netWorthType[] = data.map((item, i) => {return {x: i,date:item.date, value: item.profits - item.debts}});
   netWorth.unshift({x:0-x1Line, date:2022-1-1,value: 0});
   netWorth.push({x: widthContentChart, date: 2022-1-1, value: 0});
+  
   const curvedLine = line<netWorthType>()
   .x(d => d.x == 0-x1Line || d.x == widthContentChart? d.x: xLineScale(d.date))
   .y(d => yLineScale(d.value))
   .curve(curveMonotoneX)(netWorth) as string;
-  console.log("widthBar:", widthBar, "widthcontent:", widthContentDisplayed)
-  data.map((item) => console.log(xScale(item.date)))
   
   const onPress = (x: number)=>{
       const filterArray = data.filter(item => xScale(item.date) < x);
       const itemSelected = filterArray && filterArray.pop()
-      console.log(itemSelected)
+      setselectedBar(() => data.findIndex((d) => d == itemSelected))
+      console.log(itemSelected, data.findIndex((d) => d == itemSelected), selectedBar)
   }
   return (
     <View style={{ width: widthWrapper-8, height: heightWrapper, borderColor:"#D6DEF1", borderWidth: 8, borderRadius:8, backgroundColor:"#D6DEF1"}}>
@@ -59,7 +62,7 @@ export default function SChart ({data}: ISChartProps) {
       <View>
       <Svg width={widthContentChart} height={heightBar} style={{borderRadius:8}}>
           <Defs>
-            <Circle id={"selected-bar"}cx={0} cy={0} r={5} fill={"#000000"}/>
+            
           </Defs>
           {data.map((item, i) => (
           <View key={`group-bar-${i}`}>
@@ -93,7 +96,7 @@ export default function SChart ({data}: ISChartProps) {
             stroke={"#F5A4E8"}
             onPress={(e) => {onPress(e.nativeEvent.locationX)}}
           />
-          <Use x={xLineScale(item.date)} y={yLineScale(item.profits - item.debts)} href={'#selected-bar'}/>
+          <Circle x={selectedBar == -1? 0 :xLineScale(item.date)} y={selectedBar == -1? 0 :yLineScale(item.profits - item.debts)} id={"selected-bar"} cx={0} cy={0} r={5} fill={selectedBar == i?"#000000": "transparent"}/>
           </View>
         ))}
         <Path onPress={(e) => {onPress(e.nativeEvent.locationX)}} fill='none' stroke={"#191919"} d={`${curvedLine}`} strokeWidth={2}/>
