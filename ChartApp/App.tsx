@@ -17,39 +17,38 @@ export type DataPoint = {
 };
 export type DataType = {
   id: string;
-  date: NumberValue;
+  date: string;
   profits: number;
   debts: number;
 };
 
-export const originalData: DataPoint[]  = [
-  {id: "1", date:"2022-janeiro",  profits: 10000, debts: 3000},
-  {id: "1", date:"2022-janeiro",  profits: 10000, debts: 3000},
-  {id: "2", date:"2022-fevereiro",  profits: 10000, debts: 3000},
-  {id: "3", date:"2022-marco",  profits: 10000, debts: 3000},
-  {id: "4", date:"2022-abril",  profits: 10000, debts: 3000},
-  {id: "5", date:"2022-maio",  profits: 10000, debts: 3000},
-  {id: "6", date:"2022-junho",  profits: 10000, debts: 3000},
-  {id: "7", date:"2022-julho",  profits: 10000, debts: 3000},
-  {id: "8", date:"2022-agosto",  profits: 10000, debts: 3000},
-  {id: "9", date:"2022-setembro",  profits: 10000, debts: 3000},
-  {id: "10", date:"2022-outubro",  profits: 10000, debts: 3000},
-  {id: "11", date:"2022-novembro",  profits: 10000, debts: 3000},
-  {id: "12", date:"2022-dezembro",  profits: 10000, debts: 3000},
+export const lastYear: DataType[]  = [
+  {id: "1", date:"2021/1/1",  profits: 0, debts: 0},
+  {id: "2", date:"2021/2/1",  profits: 0, debts: 0},
+  {id: "3", date:"2021/3/1",  profits: 0, debts: 0},
+  {id: "4", date:"2021/4/1",  profits: 0, debts: 0},
+  {id: "5", date:"2021/5/1",  profits: 0, debts: 0},
+  {id: "6", date:"2021/6/1",  profits: 0, debts: 0},
+  {id: "7", date:"2021/7/1",  profits: 0, debts: 0},
+  {id: "8", date:"2021/8/1",  profits: 0, debts: 0},
+  {id: "9", date:"2021/9/1",  profits: 0, debts: 0},
+  {id: "10", date:"2021/10/1",  profits: 0, debts: 0},
+  {id: "11", date:"2021/11/1",  profits: 0, debts: 0},
+  {id: "12", date:"2021/12/1",  profits: 0, debts: 0},
 ]
 export const data: DataType[]  = [
-  {id: "1", date:2022-1-1,  profits: 10000, debts: 3000},
-  {id: "2", date:2022-2-1,  profits: 9000, debts: 5000},
-  {id: "3", date:2022-3-1,  profits: 12000, debts: 1000},
-  {id: "4", date:2022-4-1,  profits: 10000, debts: 6000},
-  {id: "5", date:2022-5-1,  profits: 8000, debts: 4000},
-  {id: "6", date:2022-6-1,  profits: 6000, debts: 4000},
-  {id: "7", date:2022-7-1,  profits: 3000, debts: 4000},
-  {id: "8", date:2022-8-1,  profits: 2000, debts: 1000},
-  {id: "9", date:2022-9-1,  profits: 5000, debts: 1000},
-  {id: "10", date:2022-10-1,  profits: 8000, debts: 3000},
-  {id: "11", date:2022-11-1,  profits: 10000, debts: 3000},
-  {id: "12", date:2022-12-1,  profits: 10000, debts: 2000},
+  {id: "1", date:"2022/1/1",  profits: 10000, debts: 3000},
+  {id: "2", date:"2022/2/1",  profits: 9000, debts: 5000},
+  {id: "3", date:"2022/3/1",  profits: 12000, debts: 1000},
+  {id: "4", date:"2022/4/1",  profits: 10000, debts: 6000},
+  {id: "5", date:"2022/5/1",  profits: 8000, debts: 4000},
+  {id: "6", date:"2022/6/1",  profits: 6000, debts: 4000},
+  {id: "7", date:"2022/7/1",  profits: 3000, debts: 4000},
+  {id: "8", date:"2022/8/1",  profits: 2000, debts: 1000},
+  {id: "9", date:"2022/9/1",  profits: 5000, debts: 1000},
+  {id: "10", date:"2022/10/1",  profits: 8000, debts: 3000},
+  {id: "11", date:"2022/11/1",  profits: 10000, debts: 3000},
+  {id: "12", date:"2022/12/1",  profits: 10000, debts: 2000},
 ]
 export type DataMediaType = {
   date: number;
