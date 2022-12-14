@@ -18,3 +18,26 @@ export const heightLine = heightContentBar -(safeAreaChart * 2) + 16;
 export const maxHeightData = (heightContentBar/2 * (100 - safeAreaChart)) / 100;
 export const year = 2022;
 export const padding = 8;
+export const textBarHeight = heightContentBar + 28;
+export const LABEL:{[key:number]:string} = {
+    1: "jan",
+    2: "fev",
+    3: "mar",
+    4: "abr",
+    5: "mai",
+    6: "jun",
+    7: "jul",
+    8: "ago",
+    9: "set",
+    10: "out",
+    11: "nov",
+    12: "dez"
+  }
+export const getMonth = (date:string) => {
+    const d = date.split("/", 3);
+    return parseInt(d[1]);
+}
+export const getYear = (date:string) => {
+    const d = date.split("/", 3);
+    return parseInt(d[0]);
+}
